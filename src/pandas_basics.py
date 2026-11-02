@@ -40,40 +40,49 @@ def load_and_explore_gis_data(file_path):
         Dataset shape: (150, 6) - That's 150 rows and 6 columns!
         ...
     """
-    
-    # TODO: Print a header to show what function is running
-    # TODO: Use print("=" * 50) and print("LOADING AND EXPLORING GIS DATA")
-    
-    # TODO: Print the file path being loaded
-    # TODO: Use print(f"Loading data from: {file_path}")
-    
-    # TODO: Try to load the CSV file using pd.read_csv()
-    # TODO: Wrap in try/except to handle missing files gracefully
-    # TODO: If file doesn't exist, print error and return None
-    
-    # TODO: Print the shape of the DataFrame (rows, columns)
-    # TODO: Use df.shape to get a tuple like (150, 6)
-    # TODO: Print it in a friendly way: "Dataset shape: (150, 6) - That's 150 rows and 6 columns!"
-    
-    # TODO: Print the column names
-    # TODO: Use df.columns to get the list
-    # TODO: Print: "Columns: ['station_id', 'name', 'latitude', ...]"
-    
-    # TODO: Print the first few rows using df.head()
-    # TODO: Show this to help understand the data
-    
-    # TODO: Print basic statistics using df.describe()
-    # TODO: This shows min, max, mean for numeric columns
-    
-    # TODO: Check for missing values using df.isnull().sum()
-    # TODO: Print how many missing values in each column
-    
-    # TODO: Print a completion message
-    
-    # TODO: Return the loaded DataFrame
-    
-    pass  # Remove this line when you implement the function
+    print("=" * 50)
+    print("LOADING AND EXPLORING GIS DATA")
+    print("=" * 50)
 
+    if not os.path.exists(file_path):
+        print(f"❌ ERROR: File not found: {file_path}")
+        print("Please check:")
+        print("- Is the file path correct?")
+        print("- Are you in the right directory?")
+        print("- Does the file exist?")
+        return None
+    
+    print(f"📁 Loading data from: {file_path}")
+
+    try:
+        df = pd.read_csv(file_path)
+        print("✅ File loaded successfully!")
+    except Exception as e:
+        print(f"❌ ERROR loading file: {e}")
+        return None
+    
+    print(f"\n📊 DATASET OVERVIEW")
+    print(f"Dataset shape: {df.shape} - That's {df.shape[0]} rows and {df.shape[1]} columns!")
+    
+    print(f"Columns: {list(df.columns)}")
+    
+    print(f"\n👀 FIRST 5 ROWS:")
+    print(df.head())
+    
+    print(f"\n📈 SUMMARY STATISTICS:")
+    print(df.describe())
+    
+    print(f"\n🔍 DATA QUALITY CHECK:")
+    missing = df.isnull().sum()
+    if missing.sum() > 0:
+        print("Missing values found:")
+        print(missing[missing > 0])
+    else:
+        print("✅ No missing values")
+    
+    print(f"\n🎉 Data exploration complete! Dataset is ready for analysis.")
+    
+    return df
 
 # =============================================================================
 # FUNCTION 2: FILTER ENVIRONMENTAL DATA
