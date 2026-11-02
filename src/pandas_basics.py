@@ -113,25 +113,40 @@ def filter_environmental_data(df, min_temp=15, max_temp=30, quality="good"):
           - Data quality: good
     """
     
-    # TODO: Print a header
-    # TODO: Use print("=" * 50) and print("FILTERING ENVIRONMENTAL DATA")
+    print("=" * 50)
+    print("FILTERING ENVIRONMENTAL DATA")
+    print("=" * 50)
     
     # TODO: Print the original DataFrame shape
     # TODO: Use len(df) to get the number of rows
     
-    # TODO: Filter by temperature range using boolean indexing
-    # TODO: Create a mask: (df['temperature_c'] >= min_temp) & (df['temperature_c'] <= max_temp)
-    # TODO: Apply the mask: filtered_df = df[mask]
+    original_count = len(df)
+    print(f"📊 Starting with {original_count} rows of environmental data")
+
+    # Temperature range filter
+    mask = (df['temperature_c'] >= min_temp) & (df['temperature_c'] <= max_temp)
+    filtered_df = df[mask]
     
-    # TODO: Filter by data quality
-    # TODO: Add another condition: filtered_df = filtered_df[filtered_df['data_quality'] == quality]
+    # Quality filter
+    filtered_df = filtered_df[filtered_df['data_quality'] == quality]
     
     # TODO: Calculate and print filtering statistics
     # TODO: - How many rows remain after filtering
     # TODO: - What percentage of data was retained
     # TODO: - Show the filter criteria used
     
-    # TODO: Return the filtered DataFrame
+    if not filtered_df.empty:
+        print(f"\n📊 FILTERED DATA SUMMARY:")
+        print(f"   Temperature range: {filtered_df['temperature_c'].min():.1f}°C to {filtered_df['temperature_c'].max():.1f}°C")
+        print(f"   Average temperature: {filtered_df['temperature_c'].mean():.1f}°C")
+        print(f"   Quality distribution: {dict(filtered_df['data_quality'].value_counts())}")
+    else:
+        print(f"\n⚠️  WARNING: No data remains after filtering!")
+        print(f"   Consider relaxing your filtering criteria.")
+    
+    print(f"\n✅ Filtering complete! Ready for analysis.")
+    
+    return filtered_df
     
     pass  # Remove this line when you implement the function
 
