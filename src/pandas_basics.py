@@ -116,12 +116,25 @@ def filter_environmental_data(df, min_temp=15, max_temp=30, quality="good"):
     print("=" * 50)
     print("FILTERING ENVIRONMENTAL DATA")
     print("=" * 50)
+
+    # Input validation
+    if df is None or df.empty:
+        print("❌ ERROR: Empty or None DataFrame provided")
+        return pd.DataFrame()
+
+    # Check for required columns
+    required_columns = ['temperature_c', 'data_quality']
+    missing_columns = [col for col in required_columns if col not in df.columns]
     
-    # TODO: Print the original DataFrame shape
-    # TODO: Use len(df) to get the number of rows
-    
-    original_count = len(df)
-    print(f"📊 Starting with {original_count} rows of environmental data")
+    if missing_columns:
+        print(f"❌ ERROR: Missing required columns: {missing_columns}")
+        print(f"📋 Available columns: {list(df.columns)}")
+        return pd.DataFrame()
+        
+    initial_len = len(df)
+    print("UNFILTERED DATAFRAME INFO")
+    print("Shape of DataFrame:", df.shape)
+    print("\tNumber of rows =", initial_len)
 
     # Temperature range filter
     mask = (df['temperature_c'] >= min_temp) & (df['temperature_c'] <= max_temp)
@@ -130,16 +143,16 @@ def filter_environmental_data(df, min_temp=15, max_temp=30, quality="good"):
     # Quality filter
     filtered_df = filtered_df[filtered_df['data_quality'] == quality]
     
-    # TODO: Calculate and print filtering statistics
-    # TODO: - How many rows remain after filtering
-    # TODO: - What percentage of data was retained
-    # TODO: - Show the filter criteria used
-    
     if not filtered_df.empty:
         print(f"\n📊 FILTERED DATA SUMMARY:")
         print(f"   Temperature range: {filtered_df['temperature_c'].min():.1f}°C to {filtered_df['temperature_c'].max():.1f}°C")
         print(f"   Average temperature: {filtered_df['temperature_c'].mean():.1f}°C")
         print(f"   Quality distribution: {dict(filtered_df['data_quality'].value_counts())}")
+        print(f"\n📊 FILTERING STATISTICS:")
+        new_len = len(filtered_df)
+        print(f"   {new_len} rows remain after filtering")
+        print(f"   {new_len / float(initial_len)}% of rows remain after filtering")
+        print(f"   Filter criteria used: quality ==", quality)
     else:
         print(f"\n⚠️  WARNING: No data remains after filtering!")
         print(f"   Consider relaxing your filtering criteria.")
@@ -147,8 +160,6 @@ def filter_environmental_data(df, min_temp=15, max_temp=30, quality="good"):
     print(f"\n✅ Filtering complete! Ready for analysis.")
     
     return filtered_df
-    
-    pass  # Remove this line when you implement the function
 
 
 # =============================================================================
