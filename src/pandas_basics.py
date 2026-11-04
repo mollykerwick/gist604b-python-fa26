@@ -268,26 +268,66 @@ def join_station_data(stations_df, readings_df):
         Joined table: 1000 rows with station details added!
     """
     
-    # TODO: Print a header
-    # TODO: Use print("=" * 50) and print("JOINING STATION DATA")
+    print("=" * 50)
+    print("JOINING STATION DATA")
+    print("=" * 50)
     
-    # TODO: Print the shapes of both input DataFrames
-    # TODO: Show how many stations and how many readings
+    # Input validation
+    if readings_df is None or len(readings_df) == 0:
+        print("❌ ERROR: Readings DataFrame is empty or None")
+        return pd.DataFrame()
     
-    # TODO: Join the DataFrames using pd.merge()
-    # TODO: Use the 'station_id' column as the key
-    # TODO: Use how='left' to keep all readings even if station info is missing
+    if stations_df is None or len(stations_df) == 0:
+        print("❌ ERROR: Stations DataFrame is empty or None") 
+        return pd.DataFrame()
     
-    # TODO: Print the shape of the joined DataFrame
-    # TODO: Verify all readings are still present
+    # Check for required join key
+    if 'station_id' not in readings_df.columns:
+        print("❌ ERROR: 'station_id' column missing from readings data")
+        return pd.DataFrame()
     
-    # TODO: Print the new columns that were added
-    # TODO: Show which columns came from the stations table
+    if 'station_id' not in stations_df.columns:
+        print("❌ ERROR: 'station_id' column missing from stations data")
+        return pd.DataFrame()
     
-    # TODO: Return the joined DataFrame
-    
-    pass  # Remove this line when you implement the function
+    # Print input summary
+    print(f"Input data:")
+    print(f"  Readings: {len(readings_df)} rows, {len(readings_df.columns)} columns")
+    print(f"  Stations: {len(stations_df)} rows, {len(stations_df.columns)} columns")
 
+    # Analyze join keys
+    readings_stations = set(readings_df['station_id'].unique())
+    metadata_stations = set(stations_df['station_id'].unique())
+    
+    print(f"\nJoin analysis:")
+    print(f"  Stations in readings: {len(readings_stations)}")
+    print(f"  Stations in metadata: {len(metadata_stations)}")
+    print(f"  Stations in both: {len(readings_stations & metadata_stations)}")
+    
+    if readings_stations - metadata_stations:
+        print(f"  ⚠️ Readings without metadata: {readings_stations - metadata_stations}")
+    if metadata_stations - readings_stations:
+        print(f"  ℹ️ Metadata without readings: {metadata_stations - readings_stations}")
+    
+    # Perform left join to keep all readings
+    print(f"\nPerforming LEFT JOIN (keeping all readings)...")
+    df_merged = pd.merge(readings_df, stations_df, on='station_id', how='left')
+    
+    # Validate results
+    missing_metadata_count = df_merged['station_name'].isna().sum()
+    n_complete = len(df_merged) - missing_metadata_count
+
+    if n_complete == 0:
+        print("Error: No entries maintained")
+    else:
+        print("Shape of new DataFrame:", df_merged.shape)
+
+    print("New columns added from stations table:")
+    for column in df_merged:
+        if column not in readings_df.columns:
+            print(column)
+    
+    return(df_merged)
 
 # =============================================================================
 # HELPER FUNCTIONS (You don't need to modify these - they're provided!)
