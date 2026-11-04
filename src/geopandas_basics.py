@@ -50,14 +50,24 @@ def load_spatial_data(file_path: Union[str, Path], **kwargs) -> gpd.GeoDataFrame
         >>> gdf = load_spatial_data('data/cities.geojson')
         >>> print(f"Loaded {len(gdf)} features")
     """
-    # TODO: Implement this function
-    # Hints:
-    # - Convert file_path to Path object
-    # - Check if file exists
-    # - Use gpd.read_file() to load data
-    # - Handle different file formats appropriately
-    # - Validate the loaded data is not empty
-    raise NotImplementedError("load_spatial_data not yet implemented")
+
+    file_path = Path(file_path)
+        
+    # Check if file exists
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+    
+    # Try to load the spatial data
+    try:
+        gdf = gpd.read_file(file_path, **kwargs)
+    except Exception as e:
+        raise ValueError(f"Cannot read spatial data from {file_path}: {str(e)}")
+
+    if len(gdf) == 0:
+        print("DataFrame has len 0. No data read.")
+        return None
+    
+    return gdf
 
 
 # Function 2: Explore Properties
