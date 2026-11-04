@@ -151,7 +151,7 @@ def filter_environmental_data(df, min_temp=15, max_temp=30, quality="good"):
         print(f"\n📊 FILTERING STATISTICS:")
         new_len = len(filtered_df)
         print(f"   {new_len} rows remain after filtering")
-        print(f"   {new_len / float(initial_len)}% of rows remain after filtering")
+        print(f"   {100*(new_len / float(initial_len))}% of rows remain after filtering")
         print(f"   Filter criteria used: quality ==", quality)
     else:
         print(f"\n⚠️  WARNING: No data remains after filtering!")
