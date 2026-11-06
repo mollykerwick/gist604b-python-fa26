@@ -466,14 +466,35 @@ def spatial_joins(
         >>> result = spatial_joins(cities, countries, how='left', predicate='within')
         >>> print(f"Joined {len(result)} features")
     """
-    # TODO: Implement this function
-    # Hints:
-    # - Validate both inputs are GeoDataFrames
-    # - Check CRS compatibility
-    # - Use gpd.sjoin() for spatial join
-    # - Handle CRS mismatch by transforming
-    # - Validate result is not empty (for inner joins)
-    raise NotImplementedError("spatial_joins not yet implemented")
+
+    # Validate inputs
+    if not isinstance(left_gdf, gpd.GeoDataFrame) or not isinstance(right_gdf, gpd.GeoDataFrame):
+        raise ValueError("Both inputs must be GeoDataFrames")
+    
+    # Check CRS compatibility
+    if left_gdf.crs != right_gdf.crs:
+        raise ValueError(
+            f"CRS mismatch: left has {left_gdf.crs}, right has {right_gdf.crs}. "
+            "Transform to same CRS before joining."
+        )
+    
+    # Validate parameters
+    valid_how = ['inner', 'left', 'right']
+    if how not in valid_how:
+        raise ValueError(f"Invalid 'how' parameter '{how}'. Must be one of: {', '.join(valid_how)}")
+    
+    valid_predicates = ['intersects', 'contains', 'within']
+    if predicate not in valid_predicates:
+        raise ValueError(f"Invalid 'predicate' parameter '{predicate}'. Must be one of: {', '.join(valid_predicates)}")
+    
+    # Perform spatial join
+    result = gpd.sjoin(left_gdf, right_gdf, how=how, predicate=predicate)
+
+    # If no data are saved after inner joining
+    if how == "inner" and len(result) == 0:
+        raise ValueError(f"No matching features to be joined.")
+
+    return result
 
 
 # Function 7: Overlay and Visualize
