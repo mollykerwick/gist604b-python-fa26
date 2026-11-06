@@ -64,7 +64,7 @@ def load_spatial_data(file_path: Union[str, Path], **kwargs) -> gpd.GeoDataFrame
         raise ValueError(f"Cannot read spatial data from {file_path}: {str(e)}")
 
     if len(gdf) == 0:
-        print("DataFrame has len 0. No data read.")
+        print("DataFrame has no data.")
         return None
     
     return gdf
@@ -99,13 +99,48 @@ def explore_properties(gdf: gpd.GeoDataFrame) -> Dict[str, Any]:
         >>> print(f"Bounds: {props['bounds']}")
         >>> print(f"Geometry types: {props['geometry_types']}")
     """
-    # TODO: Implement this function
-    # Hints:
+
     # - Access gdf.crs for coordinate system
+    properties = {}
+        
+    # Extract CRS (handle empty GeoDataFrames without geometry column)
+    try:
+        properties['crs'] = gdf.crs
+    except AttributeError:
+        # Empty GeoDataFrame without geometry column has no CRS
+        properties['crs'] = None
+
     # - Use gdf.total_bounds for extent
+    # Extract bounds (total_bounds returns [minx, miny, maxx, maxy])
+    if len(gdf) > 0:
+        bounds = gdf.total_bounds
+        properties['bounds'] = bounds.tolist()
+    else:
+        properties['bounds'] = [np.nan, np.nan, np.nan, np.nan]
+
     # - Check gdf.geometry.geom_type for geometry types
+     # Extract geometry types
+    if len(gdf) > 0:
+        geometry_types = gdf.geometry.geom_type.unique().tolist()
+    else:
+        geometry_types = []
+    properties['geometry_types'] = geometry_types
+
     # - Count features with len(gdf)
-    raise NotImplementedError("explore_properties not yet implemented")
+    # Feature count
+    properties['feature_count'] = len(gdf)
+
+    # Column information
+    properties['columns'] = gdf.columns.tolist()
+    
+    # Additional useful properties
+    try:
+        properties['has_valid_geometries'] = gdf.geometry.is_valid.all() if len(gdf) > 0 else True
+    except AttributeError:
+        # No geometry column
+        properties['has_valid_geometries'] = True
+    
+    return properties
 
 
 # Function 3: Transform CRS
