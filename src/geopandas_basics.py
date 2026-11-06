@@ -170,15 +170,21 @@ def transform_crs(
         >>> gdf_mercator = transform_crs(gdf, 'EPSG:3857')
         >>> print(f"New CRS: {gdf_mercator.crs}")
     """
-    # TODO: Implement this function
-    # Hints:
     # - Check if gdf has a CRS defined (gdf.crs)
-    # - Use gdf.to_crs(target_crs) for transformation
     # - Handle cases where CRS is None
-    # - Validate target_crs is valid
-    # - Return a copy, not modify original
-    raise NotImplementedError("transform_crs not yet implemented")
+    if gdf.crs is None:
+        raise ValueError("Input GeoDataFrame has no CRS defined. Cannot transform.")
 
+    # - Use gdf.to_crs(target_crs) for transformation
+    # - Validate target_crs is valid
+    # Validate target CRS by trying to transform
+    try:
+        # - Return a copy, not modify original
+        result = gdf.to_crs(target_crs)
+    except Exception as e:
+        raise ValueError(f"Invalid target CRS '{target_crs}': {str(e)}")
+    
+    return result
 
 # Function 4: Geometry Operations
 
