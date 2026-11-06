@@ -343,16 +343,96 @@ def spatial_relationships(
         >>> result = spatial_relationships(points, lines, 'distance')
         >>> distances = result['results']
     """
-    # TODO: Implement this function
-    # Hints:
-    # - Validate both GeoDataFrames have CRS defined
-    # - Check if CRS match (transform if needed)
-    # - For intersects: use gdf1.geometry.intersects(gdf2.geometry)
-    # - For contains: use gdf1.geometry.contains(gdf2.geometry)
-    # - For within: use gdf1.geometry.within(gdf2.geometry)
-    # - For distance: use gdf1.geometry.distance(gdf2.geometry)
-    # - For nearest: use spatial indexing (.sindex)
-    raise NotImplementedError("spatial_relationships not yet implemented")
+    # Validate inputs
+    if gdf1.crs is None:
+        raise ValueError("Input GeoDataFrame gdf1 has no CRS defined. Cannot transform.")
+    if gdf2.crs is None:
+        raise ValueError("Input GeoDataFrame gdf2 has no CRS defined. Cannot transform.")
+
+    if not isinstance(gdf1, gpd.GeoDataFrame) or not isinstance(gdf2, gpd.GeoDataFrame):
+        raise ValueError("Both inputs must be GeoDataFrames")
+    
+    # Check CRS compatibility
+    if gdf1.crs != gdf2.crs:
+        raise ValueError(
+            f"CRS mismatch: gdf1 has {gdf1.crs}, gdf2 has {gdf2.crs}. "
+            "Transform to same CRS before testing relationships."
+        )
+    
+    # Validate relationship type
+    valid_relationships = ['intersects', 'contains', 'within', 'distance', 'nearest']
+    if relationship not in valid_relationships:
+        raise ValueError(
+            f"Invalid relationship '{relationship}'. "
+            f"Must be one of: {', '.join(valid_relationships)}"
+        )
+    
+    result = {'relationship': relationship}
+    
+    if relationship == 'intersects':
+        # Test which geometries from gdf1 intersect any geometry in gdf2
+        intersects_any = gdf1.geometry.apply(
+            lambda geom: gdf2.geometry.intersects(geom).any()
+        )
+        result['results'] = intersects_any
+        result['count'] = int(intersects_any.sum())
+        result['indices'] = intersects_any[intersects_any].index.tolist()
+        
+    elif relationship == 'contains':
+        # Test which geometries from gdf1 contain any geometry from gdf2
+        contains_any = gdf1.geometry.apply(
+            lambda geom: gdf2.geometry.within(geom).any()
+        )
+        result['results'] = contains_any
+        result['count'] = int(contains_any.sum())
+        result['indices'] = contains_any[contains_any].index.tolist()
+        
+    elif relationship == 'within':
+        # Test which geometries from gdf1 are within any geometry from gdf2
+        within_any = gdf1.geometry.apply(
+            lambda geom: gdf2.geometry.contains(geom).any()
+        )
+        result['results'] = within_any
+        result['count'] = int(within_any.sum())
+        result['indices'] = within_any[within_any].index.tolist()
+        
+    elif relationship == 'distance':
+        # Calculate minimum distance (convert to metric CRS first)
+        gdf1_proj = gdf1.to_crs('EPSG:5070')  # Albers Equal Area
+        gdf2_proj = gdf2.to_crs('EPSG:5070')
+        
+        min_distances_m = gdf1_proj.geometry.apply(
+            lambda geom: gdf2_proj.geometry.distance(geom).min()
+        )
+        min_distances_km = min_distances_m / 1000  # Convert to km
+        result['results'] = min_distances_km
+        result['distances'] = min_distances_km
+        result['count'] = len(min_distances_km)
+        result['mean_distance'] = float(min_distances_km.mean())
+        result['units'] = 'kilometers'
+        
+    elif relationship == 'nearest':
+        # Find nearest feature (using metric CRS for accurate distances)
+        gdf1_proj = gdf1.to_crs('EPSG:5070')
+        gdf2_proj = gdf2.to_crs('EPSG:5070')
+        
+        nearest_indices = []
+        nearest_distances = []
+        
+        for geom1 in gdf1_proj.geometry:
+            distances = gdf2_proj.geometry.distance(geom1)
+            nearest_idx = distances.idxmin()
+            nearest_dist_km = distances.min() / 1000  # Convert to km
+            nearest_indices.append(nearest_idx)
+            nearest_distances.append(nearest_dist_km)
+        
+        result['results'] = nearest_indices
+        result['nearest_indices'] = nearest_indices
+        result['nearest_distances'] = nearest_distances
+        result['count'] = len(nearest_indices)
+        result['units'] = 'kilometers'
+    
+    return result
 
 
 # Function 6: Spatial Joins
